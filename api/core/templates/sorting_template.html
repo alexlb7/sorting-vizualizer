@@ -4,12 +4,11 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Real-time Array Sorting Visualization</title>
+    <title>Sorting Visualizer</title>
     <!-- Include Chart.js library -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <!-- Include jQuery library -->
     <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
-    <!-- Include CSRF token in the header -->
 </head>
 <body>
     <h1>Real-time Array Sorting Visualization</h1>
@@ -28,7 +27,6 @@
     </div>
     <canvas id="arrayChart" width="800" height="300"></canvas>
     <script>
-        
 
         // Get the initial array data from the context
         var initialArr = {{ initial_arr|safe }};
@@ -59,25 +57,22 @@
                 }
             }
         });
+
         function updateChart(arr) {
-            console.log('Received data:', arr);
-            // Update the chart with the new array data
             arrayChart.data.datasets[0].data = arr;
             arrayChart.update();
         }
-        function sortArray() {
 
-            const myString = JSON.stringify(initialArr);  // Set your desired string
+        function sortArray() {
+            const arrString = JSON.stringify(initialArr);  // Set your desired string
             const selectedMethod = document.getElementById('method').value;
-            const encodedString = encodeURIComponent(myString);
+            const encodedString = encodeURIComponent(arrString);
             const eventSource = new EventSource(`sort_api?array=${encodedString}&method=${selectedMethod}`);
-    
+
             eventSource.onmessage = function (event) {
-                updateChart(event.data);
+                updateChart(JSON.parse(event.data));
             };
-    
             eventSource.onerror = function (error) {
-                console.error('EventSource failed:', error);
                 eventSource.close();
             };
         }
