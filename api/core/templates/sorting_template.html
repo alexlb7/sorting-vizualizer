@@ -27,46 +27,8 @@
         </select>
     </div>
     <canvas id="arrayChart" width="800" height="300"></canvas>
-
     <script>
-        function updateChart(arr) {
-            // Update the chart with the new array data
-            arrayChart.data.datasets[0].data = arr;
-            arrayChart.update();
-        }
-
-        function isSorted(arr) {
-            // Check if the array is sorted
-            return arr.slice().sort((a, b) => a - b).every((value, index) => value === arr[index]);
-        }
-
-        function sortArray() {
-            var selectedMethod = document.getElementById('method').value;
-            // Make an AJAX request to the sort_api
-            $.ajax({
-                url: "/sorting/sort_api/",
-                type: "POST",
-                data: {
-                    arr: JSON.stringify(arrayChart.data.datasets[0].data),
-                    method: selectedMethod
-                },
-                success: function(sortedArr) {
-                    // Update the chart with the sorted array
-                    updateChart(sortedArr);
-                    // Check if the array is already sorted
-                    if (!isSorted(sortedArr)) {
-                        // Call the function again for real-time visualization
-                        console.log("Sorting not complete!");
-                        sortArray();
-                    } else {
-                        console.log("Sorting complete!");
-                    }
-                },
-                error: function(error) {
-                    console.log("Error:", error);
-                }
-            });
-        }
+        
 
         // Get the initial array data from the context
         var initialArr = {{ initial_arr|safe }};
@@ -97,7 +59,28 @@
                 }
             }
         });
+        function updateChart(arr) {
+            console.log('Received data:', arr);
+            // Update the chart with the new array data
+            arrayChart.data.datasets[0].data = arr;
+            arrayChart.update();
+        }
+        function sortArray() {
 
+            const myString = JSON.stringify(initialArr);  // Set your desired string
+            const selectedMethod = document.getElementById('method').value;
+            const encodedString = encodeURIComponent(myString);
+            const eventSource = new EventSource(`sort_api?array=${encodedString}&method=${selectedMethod}`);
+    
+            eventSource.onmessage = function (event) {
+                updateChart(event.data);
+            };
+    
+            eventSource.onerror = function (error) {
+                console.error('EventSource failed:', error);
+                eventSource.close();
+            };
+        }
     </script>
 </body>
 </html>

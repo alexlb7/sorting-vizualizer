@@ -7,5 +7,5 @@ urlpatterns = [
     path("home", HomePage, name="home"),
     path("", index, name="index"),
     path('sorting/', sorting_view, name='sorting_view'),
-    path('sorting/sort_api/', sort_api, name='sort_api'),
+    path('sorting/sort_api', sort_api, name='sort_api'),
 ]
