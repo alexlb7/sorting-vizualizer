@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Real-time Array Sorting Visualization</title>
+    <!-- Include Chart.js library -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Include jQuery library -->
+    <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+    <!-- Include CSRF token in the header -->
+</head>
+<body>
+    <h1>Real-time Array Sorting Visualization</h1>
+    <div>
+        <button onclick=sortArray()>
+            Sort Array
+        </button>
+        <button onclick=location.reload()>
+            Reset Array
+        </button>
+        <select id= 'method' class="form-select">
+            <option selected>Select...</option>
+            <option value="b">Bubble Sort</option>
+            <option value="s">Selection Sort</option>
+        </select>
+    </div>
+    <canvas id="arrayChart" width="800" height="300"></canvas>
+
+    <script>
+        function updateChart(arr) {
+            // Update the chart with the new array data
+            arrayChart.data.datasets[0].data = arr;
+            arrayChart.update();
+        }
+
+        function isSorted(arr) {
+            // Check if the array is sorted
+            return arr.slice().sort((a, b) => a - b).every((value, index) => value === arr[index]);
+        }
+
+        function sortArray() {
+            var selectedMethod = document.getElementById('method').value;
+            // Make an AJAX request to the sort_api
+            $.ajax({
+                url: "/sorting/sort_api/",
+                type: "POST",
+                data: {
+                    arr: JSON.stringify(arrayChart.data.datasets[0].data),
+                    method: selectedMethod
+                },
+                success: function(sortedArr) {
+                    // Update the chart with the sorted array
+                    updateChart(sortedArr);
+                    // Check if the array is already sorted
+                    if (!isSorted(sortedArr)) {
+                        // Call the function again for real-time visualization
+                        console.log("Sorting not complete!");
+                        sortArray();
+                    } else {
+                        console.log("Sorting complete!");
+                    }
+                },
+                error: function(error) {
+                    console.log("Error:", error);
+                }
+            });
+        }
+
+        // Get the initial array data from the context
+        var initialArr = {{ initial_arr|safe }};
+
+        // Create a bar chart using Chart.js
+        var ctx = document.getElementById('arrayChart').getContext('2d');
+        var arrayChart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: initialArr.map((_, index) => index),
+                datasets: [{
+                    label: 'Initial Array',
+                    data: initialArr,
+                    backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                    borderColor: 'rgba(75, 192, 192, 1)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                scales: {
+                    x: {
+                        type: 'linear',
+                        position: 'bottom'
+                    },
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+
+    </script>
+</body>
+</html>

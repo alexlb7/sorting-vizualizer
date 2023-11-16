@@ -5,6 +5,9 @@ import sys
 
 
 def main():
+    # Run the compilation script
+    os.system('./compile_cpp.sh')
+
     """Run administrative tasks."""
     os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'api.settings')
     try:
