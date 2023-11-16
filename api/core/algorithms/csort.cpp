@@ -3,6 +3,7 @@
 extern "C" {
 
     typedef void (*Callback)(int arr[], int size);
+    typedef void (*MergeCallback)(int array[], int left, int mid, int right);
 
     void swap(int& a, int& b) {
         int temp = a;
@@ -78,6 +79,64 @@ extern "C" {
             callback(arr, size);
             heapify(arr, i, 0, callback);
         }
+    }
+
+    void merge(int arr[], int left, int middle, int right, Callback callback) {
+        int n1 = middle - left + 1;
+        int n2 = right - middle;
+
+        int leftArray[n1];
+        int rightArray[n2];
+
+        for (int i = 0; i < n1; i++)
+            leftArray[i] = arr[left + i];
+        for (int j = 0; j < n2; j++)
+            rightArray[j] = arr[middle + 1 + j];
+
+        int i = 0;
+        int j = 0;
+        int k = left;
+
+        while (i < n1 && j < n2) {
+            if (leftArray[i] <= rightArray[j]) {
+                arr[k] = leftArray[i];
+                i++;
+            } else {
+                arr[k] = rightArray[j];
+                j++;
+            }
+            k++;
+            callback(arr, k);  // Callback when the array is modified
+        }
+
+        while (i < n1) {
+            arr[k] = leftArray[i];
+            i++;
+            k++;
+            callback(arr, k);  // Callback when the array is modified
+        }
+
+        while (j < n2) {
+            arr[k] = rightArray[j];
+            j++;
+            k++;
+            callback(arr, k);  // Callback when the array is modified
+        }
+    }
+
+    void mergeSort(int arr[], int left, int right, Callback callback) {
+        if (left < right) {
+            int middle = left + (right - left) / 2;
+
+            mergeSort(arr, left, middle, callback);
+            mergeSort(arr, middle + 1, right, callback);
+
+            merge(arr, left, middle, right, callback);
+        }
+    }
+
+    void mergeSortCallback(int arr[], int size, Callback callback) {
+        mergeSort(arr, 0, size - 1, callback);
     }
     // ... (other functions)
 

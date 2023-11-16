@@ -10,12 +10,6 @@
     <!-- Include jQuery library -->
     <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
 
-    <style>
-        .sorting-in-progress button, .sorting-in-progress select {
-            pointer-events: none;
-            opacity: 0.5;
-        }
-    </style>
 </head>
 <body>
     <h1>Sorting Visualizer</h1>
@@ -32,6 +26,7 @@
             <option value="s">Selection Sort</option>
             <option value="i">Insertion Sort</option>
             <option value="h">Heap Sort</option>
+            <option value="m">Merge Sort</option>
         </select>
         <label for="delay">  delay (ms): </label>
         <input type="number" id="delay" step="any" placeholder="10" onchange="enableSortButton()" style="width: 42px;" value=10>
@@ -107,7 +102,7 @@
             methodSelector.disabled = true;
             document.getElementById('resetButton').disabled = true;
             delayInput.disabled = true;
-            document.getElementById('sortButton').classList.add('sorting-in-progress');
+            document.getElementById('sortButton').disabled = true;
 
             eventSource.onmessage = function (event) {
                 updateChart(JSON.parse(event.data));
@@ -119,7 +114,7 @@
                 methodSelector.disabled = false;
                 document.getElementById('resetButton').disabled = false;
                 delayInput.disabled = false;
-                document.getElementById('sortButton').classList.remove('sorting-in-progress');
+                document.getElementById('sortButton').disabled = false;
             };
         }
     </script>
