@@ -9,25 +9,34 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <!-- Include jQuery library -->
     <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+
+    <style>
+        .sorting-in-progress button, .sorting-in-progress select {
+            pointer-events: none;
+            opacity: 0.5;
+        }
+    </style>
 </head>
 <body>
-    <h1>Real-time Array Sorting Visualization</h1>
+    <h1>Sorting Visualizer</h1>
     <div>
-        <button onclick=sortArray()>
+        <button id='sortButton' onclick=sortArray() disabled>
             Sort Array
         </button>
-        <button onclick=location.reload()>
+        <button id = 'resetButton' onclick=location.reload()>
             Reset Array
         </button>
-        <select id= 'method' class="form-select">
-            <option selected>Select...</option>
+        <select id= 'method' class="form-select" onchange="enableSortButton()">
+            <option selected>Select an algorithm</option>
             <option value="b">Bubble Sort</option>
             <option value="s">Selection Sort</option>
+            <option value="i">Insertion Sort</option>
         </select>
+        <label for="delay">  delay (ms): </label>
+        <input type="number" id="delay" step="any" placeholder="10" onchange="enableSortButton()" style="width: 42px;" value=10>
     </div>
     <canvas id="arrayChart" width="800" height="300"></canvas>
     <script>
-
         // Get the initial array data from the context
         var initialArr = {{ initial_arr|safe }};
 
@@ -38,7 +47,7 @@
             data: {
                 labels: initialArr.map((_, index) => index),
                 datasets: [{
-                    label: 'Initial Array',
+                    label: 'Array',
                     data: initialArr,
                     backgroundColor: 'rgba(75, 192, 192, 0.2)',
                     borderColor: 'rgba(75, 192, 192, 1)',
@@ -63,17 +72,53 @@
             arrayChart.update();
         }
 
+        function enableSortButton() {
+            const sortButton = document.getElementById('sortButton');
+            const methodSelector = document.getElementById('method');
+            const delay = document.getElementById('delay');
+            sortButton.disabled = methodSelector.value === 'Select an algorithm' || delay.value === '';
+
+        }
+
         function sortArray() {
-            const arrString = JSON.stringify(initialArr);  // Set your desired string
-            const selectedMethod = document.getElementById('method').value;
+            const methodSelector = document.getElementById('method');
+            const selectedMethod = methodSelector.value;
+            const delayInput = document.getElementById('delay');
+            const selectedDelay = delayInput.value;
+
+            if (selectedMethod === 'Select an algorithm') {
+                alert('Please select a sorting algorithm');
+                return;
+            }
+            if (selectedDelay === '') {
+                alert('Please select a delay');
+                return;
+            } else if (selectedDelay < 3) {
+                alert('Please select a higher delay');
+                return;
+            }
+
+            const arrString = JSON.stringify(initialArr);
             const encodedString = encodeURIComponent(arrString);
-            const eventSource = new EventSource(`sort_api?array=${encodedString}&method=${selectedMethod}`);
+            const eventSource = new EventSource(`sort_api?array=${encodedString}&method=${selectedMethod}&delay=${selectedDelay}`);
+
+            // Disable buttons and selector during sorting
+            methodSelector.disabled = true;
+            document.getElementById('resetButton').disabled = true;
+            delayInput.disabled = true;
+            document.getElementById('sortButton').classList.add('sorting-in-progress');
 
             eventSource.onmessage = function (event) {
                 updateChart(JSON.parse(event.data));
             };
             eventSource.onerror = function (error) {
                 eventSource.close();
+
+                // Enable buttons and selector after sorting
+                methodSelector.disabled = false;
+                document.getElementById('resetButton').disabled = false;
+                delayInput.disabled = false;
+                document.getElementById('sortButton').classList.remove('sorting-in-progress');
             };
         }
     </script>

@@ -11,6 +11,7 @@ from queue import Queue
 def sort_api(request):
     array_string = request.GET.get('array', '')
     method = request.GET.get('method', '')
+    delay = int(request.GET.get('delay', 10))
     decoded_array_string = unquote(array_string)
     array = json.loads(decoded_array_string)
     def event_stream():
@@ -25,7 +26,7 @@ def sort_api(request):
 
         # Retrieve results from the queue and yield to the client
         while not result_queue.empty():
-            time.sleep(0.01)
+            time.sleep(delay/1000)
             yield f"data: {result_queue.get()}\n\n"
 
     response = StreamingHttpResponse(event_stream(), content_type='text/event-stream')

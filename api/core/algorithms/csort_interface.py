@@ -7,8 +7,10 @@ csort_lib = CDLL('core/algorithms/lib/csort.so')  # Update with the correct path
 # Define the function signature
 bubble_sort = csort_lib.bubble_sort
 selection_sort = csort_lib.selection_sort
+insertion_sort = csort_lib.insertion_sort
 bubble_sort.argtypes = [POINTER(c_int), c_int, CFUNCTYPE(None, POINTER(c_int))]
 selection_sort.argtypes = [POINTER(c_int), c_int, CFUNCTYPE(None, POINTER(c_int))]
+insertion_sort.argtypes = [POINTER(c_int), c_int, CFUNCTYPE(None, POINTER(c_int))]
 
 def csort(arr, method, result_queue):
     size = len(arr)
@@ -18,7 +20,10 @@ def csort(arr, method, result_queue):
         updated_arr = [arr_ptr[i] for i in range(size)]
         result_queue.put(updated_arr)
 
-    if method == 'b':
-        bubble_sort(c_arr, size, CFUNCTYPE(None, POINTER(c_int))(c_callback))
-    elif method == 's':
-        selection_sort(c_arr, size, CFUNCTYPE(None, POINTER(c_int))(c_callback))
+    match method:
+        case 'b':
+            bubble_sort(c_arr, size, CFUNCTYPE(None, POINTER(c_int))(c_callback))
+        case 's':
+            selection_sort(c_arr, size, CFUNCTYPE(None, POINTER(c_int))(c_callback))
+        case 'i':
+            insertion_sort(c_arr, size, CFUNCTYPE(None, POINTER(c_int))(c_callback))
