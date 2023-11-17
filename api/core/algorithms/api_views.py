@@ -4,6 +4,7 @@ from core.algorithms.csort_interface import csort
 from django.views.decorators.csrf import csrf_exempt
 from urllib.parse import unquote
 import time
+import random
 import threading
 from queue import Queue
 
@@ -32,3 +33,11 @@ def sort_api(request):
     response = StreamingHttpResponse(event_stream(), content_type='text/event-stream')
     response['Cache-Control'] = 'no-cache'
     return response
+
+@csrf_exempt
+def rebuild_array(request):
+    size = int(request.GET.get('size', 100))
+    max = int(request.GET.get('size', 1000))
+
+    arr = [random.randint(0, max) for _ in range(size)]
+    return JsonResponse(arr, safe=False)

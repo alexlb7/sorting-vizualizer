@@ -17,7 +17,7 @@
         <button id='sortButton' onclick=sortArray() disabled>
             Sort Array
         </button>
-        <button id = 'resetButton' onclick=location.reload()>
+        <button id = 'resetButton' onclick=resetArray()>
             Reset Array
         </button>
         <select id= 'method' class="form-select" onchange="enableSortButton()">
@@ -30,10 +30,15 @@
         </select>
         <label for="delay">  delay (ms): </label>
         <input type="number" id="delay" step="any" placeholder="10" onchange="enableSortButton()" style="width: 42px;" value=10>
+        <button id = 'rebuildButton' onclick=getList()>
+            Rebuild Array
+        </button>
+        <label for="size">  array size: </label>
+        <input type="number" id="size" step="any" placeholder="100" onchange="enableSortButton()" style="width: 42px;" value=100>       
         <div>
             <p id="moves"></p>
-            <p id="visual_timer"></p> 
-            <p id="real_timer"></p> 
+            <p id="visual_timer"></p>
+            <p id="real_timer"></p>
         </div>
     </div>
     <canvas id="arrayChart" width="800" height="300"></canvas>
@@ -67,13 +72,22 @@
                     y: {
                         beginAtZero: true
                     }
+                },
+                plugins: {
+                    animation: {
+                        duration: 0 // Set the animation duration to 0 to disable animations
+                    }
                 }
+            },
+            animation: {
+                duration: 0,
+                update: false
             }
         });
 
         function updateChart(arr) {
             arrayChart.data.datasets[0].data = arr;
-            arrayChart.update();
+            arrayChart.update({duration: 0});
         }
 
         function enableSortButton() {
@@ -92,18 +106,6 @@
             const delayInput = document.getElementById('delay');
             const selectedDelay = delayInput.value;
 
-            if (selectedMethod === 'Select an algorithm') {
-                alert('Please select a sorting algorithm');
-                return;
-            }
-            if (selectedDelay === '') {
-                alert('Please select a delay');
-                return;
-            } else if (selectedDelay < 3) {
-                alert('Please select a higher delay');
-                return;
-            }
-
             const arrString = JSON.stringify(initialArr);
             const encodedString = encodeURIComponent(arrString);
             const eventSource = new EventSource(`sort_api?array=${encodedString}&method=${selectedMethod}&delay=${selectedDelay}`);
@@ -117,11 +119,13 @@
                 const currentTime = new Date().getTime();
                 const elapsedTimeInSeconds = (currentTime - startTime) / 1000;
                 timerElement.textContent = `Visual Time: ${elapsedTimeInSeconds.toFixed(1)} s`;
-            }, 500); // Update every 1000 milliseconds (1 second)
+            }, 1);
 
             methodSelector.disabled = true;
             document.getElementById('resetButton').disabled = true;
+            document.getElementById('rebuildButton').disabled = true;
             delayInput.disabled = true;
+            document.getElementById('size').disabled = true;
             document.getElementById('sortButton').disabled = true;
 
             eventSource.onmessage = function (event) {
@@ -140,11 +144,37 @@
 
                 methodSelector.disabled = false;
                 document.getElementById('resetButton').disabled = false;
+                document.getElementById('rebuildButton').disabled = false;
                 delayInput.disabled = false;
+                document.getElementById('size').disabled = false;
                 document.getElementById('sortButton').disabled = false;
 
                 moves = 0;
             };
+        }
+        function resetArray () {
+            updateChart(initialArr);
+        }
+
+        function getList () {
+            const size = document.getElementById('size').value;
+
+            var url = "rebuild_array";
+
+            $.ajax({
+                url: url,
+                method: 'GET',
+                data: {size: size, max: size},
+                success: function(response) {
+                    arrayChart.data.labels = response.map((_, index) => index);
+                    arrayChart.data.datasets[0].data = response;
+                    arrayChart.update({duration: 0});
+                    initialArr = response;
+                },
+                error: function(error) {
+                    console.error('Error:', error);
+                }
+            });
         }
     </script>
 </body>
