@@ -10,12 +10,6 @@
     <!-- Include jQuery library -->
     <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
 
-    <style>
-        .sorting-in-progress button, .sorting-in-progress select {
-            pointer-events: none;
-            opacity: 0.5;
-        }
-    </style>
 </head>
 <body>
     <h1>Sorting Visualizer</h1>
@@ -23,7 +17,7 @@
         <button id='sortButton' onclick=sortArray() disabled>
             Sort Array
         </button>
-        <button id = 'resetButton' onclick=location.reload()>
+        <button id = 'resetButton' onclick=resetArray()>
             Reset Array
         </button>
         <select id= 'method' class="form-select" onchange="enableSortButton()">
@@ -32,12 +26,26 @@
             <option value="s">Selection Sort</option>
             <option value="i">Insertion Sort</option>
             <option value="h">Heap Sort</option>
+            <option value="m">Merge Sort</option>
         </select>
         <label for="delay">  delay (ms): </label>
         <input type="number" id="delay" step="any" placeholder="10" onchange="enableSortButton()" style="width: 42px;" value=10>
+        <button id = 'rebuildButton' onclick=getList()>
+            Rebuild Array
+        </button>
+        <label for="size">  array size: </label>
+        <input type="number" id="size" step="any" placeholder="100" onchange="enableSortButton()" style="width: 42px;" value=100>       
+        <div>
+            <p id="moves"></p>
+            <p id="visual_timer"></p>
+            <p id="real_timer"></p>
+        </div>
     </div>
     <canvas id="arrayChart" width="800" height="300"></canvas>
     <script>
+
+        var moves = 0;
+
         // Get the initial array data from the context
         var initialArr = {{ initial_arr|safe }};
 
@@ -64,13 +72,22 @@
                     y: {
                         beginAtZero: true
                     }
+                },
+                plugins: {
+                    animation: {
+                        duration: 0 // Set the animation duration to 0 to disable animations
+                    }
                 }
+            },
+            animation: {
+                duration: 0,
+                update: false
             }
         });
 
         function updateChart(arr) {
             arrayChart.data.datasets[0].data = arr;
-            arrayChart.update();
+            arrayChart.update({duration: 0});
         }
 
         function enableSortButton() {
@@ -82,45 +99,82 @@
         }
 
         function sortArray() {
+            document.getElementById('real_timer').innerHTML = ``;
+
             const methodSelector = document.getElementById('method');
             const selectedMethod = methodSelector.value;
             const delayInput = document.getElementById('delay');
             const selectedDelay = delayInput.value;
 
-            if (selectedMethod === 'Select an algorithm') {
-                alert('Please select a sorting algorithm');
-                return;
-            }
-            if (selectedDelay === '') {
-                alert('Please select a delay');
-                return;
-            } else if (selectedDelay < 3) {
-                alert('Please select a higher delay');
-                return;
-            }
-
             const arrString = JSON.stringify(initialArr);
             const encodedString = encodeURIComponent(arrString);
             const eventSource = new EventSource(`sort_api?array=${encodedString}&method=${selectedMethod}&delay=${selectedDelay}`);
 
-            // Disable buttons and selector during sorting
+            // Start the timer
+            const startTime = new Date().getTime();
+
+            // Update the timer on the screen
+            const timerElement = document.getElementById('visual_timer');
+            let timerInterval = setInterval(function () {
+                const currentTime = new Date().getTime();
+                const elapsedTimeInSeconds = (currentTime - startTime) / 1000;
+                timerElement.textContent = `Visual Time: ${elapsedTimeInSeconds.toFixed(1)} s`;
+            }, 1);
+
             methodSelector.disabled = true;
             document.getElementById('resetButton').disabled = true;
+            document.getElementById('rebuildButton').disabled = true;
             delayInput.disabled = true;
-            document.getElementById('sortButton').classList.add('sorting-in-progress');
+            document.getElementById('size').disabled = true;
+            document.getElementById('sortButton').disabled = true;
 
             eventSource.onmessage = function (event) {
+                moves++;
                 updateChart(JSON.parse(event.data));
+                document.getElementById('moves').innerHTML = `Writes in the array: ${moves}`;
             };
             eventSource.onerror = function (error) {
                 eventSource.close();
 
-                // Enable buttons and selector after sorting
+                clearInterval(timerInterval);
+
+                const endTime = new Date().getTime();
+                const realTimeElapsedInSeconds = (endTime - startTime) - moves * selectedDelay;
+                document.getElementById('real_timer').innerHTML = `Real time: ${realTimeElapsedInSeconds} ms`;
+
                 methodSelector.disabled = false;
                 document.getElementById('resetButton').disabled = false;
+                document.getElementById('rebuildButton').disabled = false;
                 delayInput.disabled = false;
-                document.getElementById('sortButton').classList.remove('sorting-in-progress');
+                document.getElementById('size').disabled = false;
+                document.getElementById('sortButton').disabled = false;
+
+                moves = 0;
             };
+        }
+        function resetArray () {
+            updateChart(initialArr);
+        }
+
+        function getList () {
+            const size = document.getElementById('size').value;
+
+            var url = "rebuild_array";
+
+            $.ajax({
+                url: url,
+                method: 'GET',
+                data: {size: size, max: size},
+                success: function(response) {
+                    arrayChart.data.labels = response.map((_, index) => index);
+                    arrayChart.data.datasets[0].data = response;
+                    arrayChart.update({duration: 0});
+                    initialArr = response;
+                },
+                error: function(error) {
+                    console.error('Error:', error);
+                }
+            });
         }
     </script>
 </body>

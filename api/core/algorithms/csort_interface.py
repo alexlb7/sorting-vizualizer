@@ -17,6 +17,9 @@ insertion_sort.argtypes = [POINTER(c_int), c_int, CFUNCTYPE(None, POINTER(c_int)
 heapsort = csort_lib.heapsort
 heapsort.argtypes = [POINTER(c_int), c_int, CFUNCTYPE(None, POINTER(c_int))]
 
+mergesort = csort_lib.mergeSortCallback
+mergesort.argtypes = [POINTER(c_int), c_int, CFUNCTYPE(None, POINTER(c_int))]
+
 def csort(arr, method, result_queue):
     size = len(arr)
     c_arr = (c_int * size)(*arr)
@@ -24,6 +27,7 @@ def csort(arr, method, result_queue):
     def c_callback(arr_ptr):
         updated_arr = [arr_ptr[i] for i in range(size)]
         result_queue.put(updated_arr)
+        #print(updated_arr)
 
     match method:
         case 'b':
@@ -34,3 +38,5 @@ def csort(arr, method, result_queue):
             insertion_sort(c_arr, size, CFUNCTYPE(None, POINTER(c_int))(c_callback))
         case 'h':
             heapsort(c_arr, size, CFUNCTYPE(None, POINTER(c_int))(c_callback))
+        case 'm':
+            mergesort(c_arr, size, CFUNCTYPE(None, POINTER(c_int))(c_callback))
