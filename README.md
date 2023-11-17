@@ -1,5 +1,3 @@
-# sorting-vizualizer
-
 Sorting Visualizer
 
 How to run:
@@ -12,7 +10,9 @@ How to run:
       - python3 manage.py runserver
   - Access the website at http://127.0.0.1:8000/
 
-Unlike the majority of sorting visualization mine was built in Django therefore i needed a particular backend-frontend interface to the visualization work. 
+How it works:
+
+  Unlike the majority of sorting visualization mine was built in Django therefore i needed a particular backend-frontend interface to the visualization work. 
 I used Event Source on the template to capture any generator sent by the StreamingHttpResponse from the view so i can display all changes of the array in real time.
 The algorithms were written in cpp, that was the original idea so that's why i used a backend in spite of the default javascript algorithms to make visualizers.
 Then i used the cpython interface to communicate export the algos and did a callback inside then everytime the array changes, and the interface everytime there is a callback push the array to a queue.
