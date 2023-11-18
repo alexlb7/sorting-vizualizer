@@ -3,8 +3,8 @@ How to run:
   - Run these commands:
       - python3 -m venv .venv
       - source .venv/bin/activate
-      - cd api
       - pip install -r requirements.txt
+      - cd api
       - python3 manage.py runserver
   - Access the website at http://127.0.0.1:8000/
 
