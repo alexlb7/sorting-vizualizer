@@ -1,4 +1,3 @@
-# csort_interface.py
 from ctypes import CDLL, c_int, POINTER, CFUNCTYPE
 
 # Load the shared library (.so) or DLL
@@ -20,6 +19,18 @@ heapsort.argtypes = [POINTER(c_int), c_int, CFUNCTYPE(None, POINTER(c_int))]
 mergesort = csort_lib.mergeSortCallback
 mergesort.argtypes = [POINTER(c_int), c_int, CFUNCTYPE(None, POINTER(c_int))]
 
+quicksort = csort_lib.quicksortfirstcall
+quicksort.argtypes = [POINTER(c_int), c_int, CFUNCTYPE(None, POINTER(c_int))]
+
+bucketsort = csort_lib.bucketsort
+quicksort.argtypes = [POINTER(c_int), c_int, CFUNCTYPE(None, POINTER(c_int))]
+
+radixsort = csort_lib.radixsort
+radixsort.argtypes = [POINTER(c_int), c_int, CFUNCTYPE(None, POINTER(c_int))]
+
+countingsort = csort_lib.countingsort
+countingsort.argtypes = [POINTER(c_int), c_int, CFUNCTYPE(None, POINTER(c_int))]
+
 def csort(arr, method, result_queue):
     size = len(arr)
     c_arr = (c_int * size)(*arr)
@@ -27,7 +38,6 @@ def csort(arr, method, result_queue):
     def c_callback(arr_ptr):
         updated_arr = [arr_ptr[i] for i in range(size)]
         result_queue.put(updated_arr)
-        #print(updated_arr)
 
     match method:
         case 'b':
@@ -40,3 +50,11 @@ def csort(arr, method, result_queue):
             heapsort(c_arr, size, CFUNCTYPE(None, POINTER(c_int))(c_callback))
         case 'm':
             mergesort(c_arr, size, CFUNCTYPE(None, POINTER(c_int))(c_callback))
+        case 'q':
+            quicksort(c_arr, size, CFUNCTYPE(None, POINTER(c_int))(c_callback))
+        case 'k':
+            bucketsort(c_arr, size, CFUNCTYPE(None, POINTER(c_int))(c_callback))
+        case 'r':
+            radixsort(c_arr, size, CFUNCTYPE(None, POINTER(c_int))(c_callback))
+        case 't':
+            countingsort(c_arr, size, CFUNCTYPE(None, POINTER(c_int))(c_callback))
