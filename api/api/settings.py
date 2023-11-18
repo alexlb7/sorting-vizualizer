@@ -11,21 +11,25 @@ https://docs.djangoproject.com/en/4.1/ref/settings/
 """
 
 from pathlib import Path
+import environ
+import os
 
+env = environ.Env(
+    # set casting, default value
+    DEBUG=(bool, False)
+)
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+environ.Env.read_env(os.path.join(Path(__file__).resolve().parent.parent.parent, '.env'))
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.1/howto/deployment/checklist/
 
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-9k9#10#g4*zcgzs3$_jy4&xjd+7@9x3=*#$_7k6+w977ygggy@'
+SECRET_KEY = env('SECRET_KEY')
+DEBUG = env('DEBUG') == 'True'
 
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
-
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
 
 # Application definition
@@ -84,7 +88,27 @@ DATABASES = {
     }
 }
 
-
+if env('SQL_ENGINE') == 'django.db.backends.sqlite3':
+    print("=======> Start SQLite")
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
+        }
+    }
+else:
+    print("=======> Start postgres")
+    print("=======> User DB "+os.environ.get("SQL_USER"))
+    DATABASES = {
+        'default': {
+            'ENGINE': env('SQL_ENGINE'),
+            'NAME': env('SQL_DATABASE'),
+            'USER': env('SQL_USER'),
+            'PASSWORD': env('SQL_PASSWORD'),
+            'HOST': env('SQL_HOST'),
+            'PORT': env('SQL_PORT'),
+        }
+    }
 # Password validation
 # https://docs.djangoproject.com/en/4.1/ref/settings/#auth-password-validators
 
@@ -118,8 +142,8 @@ USE_TZ = True
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.1/howto/static-files/
-
-STATIC_URL = 'static/'
+STATIC_ROOT = 'static/'
+STATIC_URL = 'api/static/'
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.1/ref/settings/#default-auto-field
