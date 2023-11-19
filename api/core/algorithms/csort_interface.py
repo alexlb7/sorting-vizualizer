@@ -39,22 +39,21 @@ def csort(arr, method, result_queue):
         updated_arr = [arr_ptr[i] for i in range(size)]
         result_queue.put(updated_arr)
 
-    match method:
-        case 'b':
-            bubble_sort(c_arr, size, CFUNCTYPE(None, POINTER(c_int))(c_callback))
-        case 's':
-            selection_sort(c_arr, size, CFUNCTYPE(None, POINTER(c_int))(c_callback))
-        case 'i':
-            insertion_sort(c_arr, size, CFUNCTYPE(None, POINTER(c_int))(c_callback))
-        case 'h':
-            heapsort(c_arr, size, CFUNCTYPE(None, POINTER(c_int))(c_callback))
-        case 'm':
-            mergesort(c_arr, size, CFUNCTYPE(None, POINTER(c_int))(c_callback))
-        case 'q':
-            quicksort(c_arr, size, CFUNCTYPE(None, POINTER(c_int))(c_callback))
-        case 'k':
-            bucketsort(c_arr, size, CFUNCTYPE(None, POINTER(c_int))(c_callback))
-        case 'r':
-            radixsort(c_arr, size, CFUNCTYPE(None, POINTER(c_int))(c_callback))
-        case 't':
-            countingsort(c_arr, size, CFUNCTYPE(None, POINTER(c_int))(c_callback))
+    if method == 'b':
+        bubble_sort(c_arr, size, CFUNCTYPE(None, POINTER(c_int))(c_callback))
+    elif method == 's':
+        selection_sort(c_arr, size, CFUNCTYPE(None, POINTER(c_int))(c_callback))
+    elif method == 'i':
+        insertion_sort(c_arr, size, CFUNCTYPE(None, POINTER(c_int))(c_callback))
+    elif method == 'h':
+        heapsort(c_arr, size, CFUNCTYPE(None, POINTER(c_int))(c_callback))
+    elif method == 'm':
+        mergesort(c_arr, size, CFUNCTYPE(None, POINTER(c_int))(c_callback))
+    elif method == 'q':
+        quicksort(c_arr, size, CFUNCTYPE(None, POINTER(c_int))(c_callback))
+    elif method == 'k':
+        bucketsort(c_arr, size, CFUNCTYPE(None, POINTER(c_int))(c_callback))
+    elif method == 'r':
+        radixsort(c_arr, size, CFUNCTYPE(None, POINTER(c_int))(c_callback))
+    elif method == 't':
+        countingsort(c_arr, size, CFUNCTYPE(None, POINTER(c_int))(c_callback))
