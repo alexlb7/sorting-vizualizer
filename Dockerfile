@@ -1,5 +1,8 @@
 FROM python:3.10.5-slim-buster
 
+RUN apt-get update
+RUN apt-get install g++ -y
+
 RUN pip install --upgrade pip
 
 COPY ./requirements.txt .
